@@ -1,0 +1,23 @@
+# attendance.db dosyasını hariç tut
+attendance.db
+
+
+*.log
+*.tmp
+
+# System docs
+.DS_Store
+Thumbs.db
+
+# Python env 
+venv/
+.env
+
+
+.vscode/
+.idea/
+
+
+__pycache__/
+*.pyc
+*.pyo
