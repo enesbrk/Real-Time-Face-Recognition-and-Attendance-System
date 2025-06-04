@@ -4,6 +4,7 @@ from tkinter import Button, Entry, Label, Toplevel, messagebox
 from PIL import Image, ImageTk
 from attendance_logic import init_attendance_logic, process_attendance_frame
 from register_mode import run_register_mode
+import threading
 
 selected_mode = "attendance"
 
@@ -53,36 +54,54 @@ def open_register_popup():
             return
 
         popup.destroy()
-        run_register_mode(fakulte, bolum, sinif, isim, video_label=lbl)
+        run_register_mode(fakulte, bolum, sinif, isim)
 
     tk.Button(popup, text="Kaydet", command=submit, bg="#007acc", fg="white", font=("Arial", 12)).grid(row=4, column=0, columnspan=2, pady=10)
 
 
 attendance_cap = None
-
+attendance_running = False
+attendance_thread = None
 
 def start_attendance_mode():
-    global attendance_cap
+    global attendance_cap, attendance_running, attendance_thread
+    if attendance_running:
+        return
     init_attendance_logic()
-    attendance_cap = cv2.VideoCapture(cv2.CAP_DSHOW)  # MSMF yerine DSHOW
-    process_attendance_frame_stream()
+    attendance_cap = cv2.VideoCapture(cv2.CAP_DSHOW)
+    if not attendance_cap.isOpened():
+        messagebox.showerror("Hata", "Kamera açılamadı!")
+        return
+    attendance_running = True
+    attendance_thread = threading.Thread(target=process_attendance_frame_stream)
+    attendance_thread.start()
+
+def stop_attendance_mode():
+    global attendance_cap, attendance_running
+    attendance_running = False
+    if attendance_cap:
+        attendance_cap.release()
+        attendance_cap = None
+    
+    # Ekranı sıfırla
+    lbl.configure(image='')  # Görseli kaldır
+    lbl.imgtk = None         # Bellekteki görüntü referansını sil  
 
 
 def process_attendance_frame_stream():
-    global attendance_cap
-    ret, frame = attendance_cap.read()
-    if not ret or frame is None:
-        lbl.after(10, process_attendance_frame_stream)
-        return
-
-    frame = cv2.flip(frame, 1)
-    processed = process_attendance_frame(frame)
-    img_rgb = cv2.cvtColor(processed, cv2.COLOR_BGR2RGB)
-    im = Image.fromarray(img_rgb)
-    imgtk = ImageTk.PhotoImage(image=im)
-    lbl.imgtk = imgtk
-    lbl.configure(image=imgtk)
-    lbl.after(10, process_attendance_frame_stream)
+    global attendance_cap, attendance_running
+    while attendance_running:
+        ret, frame = attendance_cap.read()
+        if not ret or frame is None:
+            continue
+        frame = cv2.flip(frame, 1)
+        processed = process_attendance_frame(frame)
+        img_rgb = cv2.cvtColor(processed, cv2.COLOR_BGR2RGB)
+        im = Image.fromarray(img_rgb)
+        imgtk = ImageTk.PhotoImage(image=im)
+        lbl.imgtk = imgtk
+        lbl.configure(image=imgtk)
+        lbl.update()
 
 
 root = tk.Tk()
@@ -105,6 +124,12 @@ btn_attendance = Button(btn_frame, text="✅ Attendance", command=set_attendance
                         bg="#007acc", fg="white", font=("Arial", 14, "bold"),
                         width=16, height=2, relief="flat", activebackground="#005b96")
 btn_attendance.pack(pady=20, anchor="w")
+
+btn_stop = Button(btn_frame, text="🛑 Kamerayı Kapat", command=stop_attendance_mode,
+                  bg="#cc0000", fg="white", font=("Arial", 14, "bold"),
+                  width=16, height=2, relief="flat", activebackground="#990000")
+btn_stop.pack(pady=20, anchor="w")
+
 
 lbl = tk.Label(root, bg="#dbe9f4", bd=2, relief="ridge")
 lbl.pack(expand=True, fill="both", padx=20, pady=20)
