@@ -8,6 +8,10 @@ import threading
 
 selected_mode = "attendance"
 
+# --- Attendance işlemleri için global değişkenler ---
+attendance_cap = None
+attendance_running = False
+attendance_thread = None
 
 def set_register():
     global selected_mode
@@ -15,13 +19,11 @@ def set_register():
     print("Register modu seçildi.")
     open_register_popup()
 
-
 def set_attendance():
     global selected_mode
     selected_mode = "attendance"
     print("Attendance modu seçildi.")
     start_attendance_mode()
-
 
 def open_register_popup():
     popup = Toplevel()
@@ -59,10 +61,6 @@ def open_register_popup():
     tk.Button(popup, text="Kaydet", command=submit, bg="#007acc", fg="white", font=("Arial", 12)).grid(row=4, column=0, columnspan=2, pady=10)
 
 
-attendance_cap = None
-attendance_running = False
-attendance_thread = None
-
 def start_attendance_mode():
     global attendance_cap, attendance_running, attendance_thread
     if attendance_running:
@@ -82,11 +80,8 @@ def stop_attendance_mode():
     if attendance_cap:
         attendance_cap.release()
         attendance_cap = None
-    
-    # Ekranı sıfırla
-    lbl.configure(image='')  # Görseli kaldır
-    lbl.imgtk = None         # Bellekteki görüntü referansını sil  
-
+    lbl.configure(image='')
+    lbl.imgtk = None
 
 def process_attendance_frame_stream():
     global attendance_cap, attendance_running
@@ -95,15 +90,21 @@ def process_attendance_frame_stream():
         if not ret or frame is None:
             continue
         frame = cv2.flip(frame, 1)
-        processed = process_attendance_frame(frame)
-        img_rgb = cv2.cvtColor(processed, cv2.COLOR_BGR2RGB)
+
+        processed_frame, recognized_name = process_attendance_frame(frame)
+
+        img_rgb = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB)
         im = Image.fromarray(img_rgb)
         imgtk = ImageTk.PhotoImage(image=im)
         lbl.imgtk = imgtk
         lbl.configure(image=imgtk)
         lbl.update()
 
+        if recognized_name:
+            status_label.config(text=f"Kayıt tamamlandı: {recognized_name}")
+            root.after(3000, lambda: status_label.config(text=""))
 
+# --- GUI Arayüzü ---
 root = tk.Tk()
 root.title("AEEE - Attendance and Registration System")
 root.geometry("1000x700")
@@ -125,14 +126,16 @@ btn_attendance = Button(btn_frame, text="✅ Attendance", command=set_attendance
                         width=16, height=2, relief="flat", activebackground="#005b96")
 btn_attendance.pack(pady=20, anchor="w")
 
-btn_stop = Button(btn_frame, text="🛑 Kamerayı Kapat", command=stop_attendance_mode,
+btn_stop = Button(btn_frame, text="🛑 Off Mode", command=stop_attendance_mode,
                   bg="#cc0000", fg="white", font=("Arial", 14, "bold"),
                   width=16, height=2, relief="flat", activebackground="#990000")
 btn_stop.pack(pady=20, anchor="w")
 
-
 lbl = tk.Label(root, bg="#dbe9f4", bd=2, relief="ridge")
 lbl.pack(expand=True, fill="both", padx=20, pady=20)
+
+status_label = Label(root, text="", fg="green", font=("Arial", 14, "bold"), bg="#f0f4f7")
+status_label.pack(pady=10)
 
 root.mainloop()
 

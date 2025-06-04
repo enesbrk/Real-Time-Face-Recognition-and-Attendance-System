@@ -143,6 +143,8 @@ def process_attendance_frame(frame):
     pil_image = Image.fromarray(frame_rgb)
     boxes, _ = mtcnn.detect(pil_image)
 
+    recognized_name = None  # GUI'de göstermek için
+
     if boxes is not None:
         draw = ImageDraw.Draw(pil_image)
         for box in boxes:
@@ -165,8 +167,10 @@ def process_attendance_frame(frame):
                 if verification_counts[full_key] >= verification_threshold:
                     add_attendance(full_key)
                     verification_counts[full_key] = 0
+                    recognized_name = isim  
 
-    return cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+    return cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR), recognized_name
+
 
 # Exportable for GUI
 __all__ = ["init_attendance_logic", "process_attendance_frame"]
