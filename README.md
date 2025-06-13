@@ -46,7 +46,7 @@ Faculty/
 ## ⚙️ Installation
 
 1. Clone the repository:
-   git clone https://github.com/yourusername/face-recognition-attendance.git
+   git clone https://github.com/enesbrk/face-recognition-attendance.git
    cd face-recognition-attendance
 
 2. Install dependencies:
