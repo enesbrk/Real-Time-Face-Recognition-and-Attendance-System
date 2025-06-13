@@ -1,0 +1,8 @@
+face_recognition
+opencv-python
+numpy
+pillow
+firebase-admin
+python-dotenv
+google-cloud-storage
+
