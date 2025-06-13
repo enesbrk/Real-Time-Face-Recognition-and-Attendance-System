@@ -14,16 +14,15 @@ This project implements an **AI-based facial recognition attendance system** des
 ## 📁 Project Structure
 
 project/
-│
-├── register_mode.py           # GUI for student registration
-├── register_logic.py          # Handles photo capture and GCS upload
-├── attendance_mode.py         # Face recognition and attendance marking
-├── known_faces.pkl            # Pickled face embeddings
-├── firebase_config.json       # Firebase configuration file
-├── gcs_utils.py               # GCS upload and folder management
-├── gui_app.py                 # Main GUI application launcher
-│
-└── dataset/                   # Optional local dataset (for debugging)
+
+ - register_mode.py           # GUI for student registration
+ - register_logic.py          # Handles photo capture and GCS upload
+ - attendance_mode.py         # Face recognition and attendance marking
+ - known_faces.pkl            # Pickled face embeddings
+ - firebase_config.json       # Firebase configuration file
+ - gcs_utils.py               # GCS upload and folder management
+ - gui_app.py                 # Main GUI application launcher
+ - dataset/                   # Optional local dataset (for debugging)
 
 ## 🧰 Technologies Used
 
@@ -37,20 +36,12 @@ project/
 Images are organized hierarchically:
 
 Faculty/
-└── Department/
-    └── Class/
-        └── Student_Name_Surname/
-            ├── 1.jpg
-            ├── 2.jpg
-            └── ...
+    Department/
+        Class/
+            Student_Name_Surname/
+                1.jpg
+                2.jpg    
 
-Example:
-Engineering Faculty/
-└── Software Engineering/
-    └── 1st Year/
-        └── John_Doe/
-            ├── 1.jpg
-            └── 2.jpg
 
 ## ⚙️ Installation
 
@@ -88,7 +79,3 @@ python attendance_mode.py
 - The system skips re-processing known faces by checking known_faces.pkl.
 - Ensure Firebase and GCS integration is properly configured before deployment.
 
-
-## 📄 License
-
-This project is licensed under the MIT License. See the LICENSE file for more details.
